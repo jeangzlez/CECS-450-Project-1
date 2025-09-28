@@ -1,5 +1,6 @@
 import glob
 import pandas as pd
+import folium
 
 folder_path = "dataset"
 csv_files = glob.glob(folder_path + "/*.csv")
