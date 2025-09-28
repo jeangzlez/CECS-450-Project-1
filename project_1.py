@@ -11,5 +11,5 @@ for filename in csv_files:
     df = pd.read_csv(filename, index_col=None)
     content.append(df)
 
-data_fram = pd.concat(content)
+data_frame = pd.concat(content)
 print(data_frame)
