@@ -1,4 +1,36 @@
 import pandas as pd
-import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as plt
 
+# read files
 df = pd.read_csv("dataset/drimpair.csv")
+cf = pd.read_csv("dataset/accident.csv")
+
+#filter to California
+ca = cf[(cf["STATENAME"] == "CALIFORNIA") | (cf["STATE"] == 6)]
+
+highways = ["I-5", "I-10", "I-405", "US-101", "I-110", "I-105", "I-605", "I-710"]
+#checks fatalities in highways
+fatal_acc = ca[ca["TWAY_ID"].isin(highways) & (ca["FATALS"] > 0)]
+#matches case number to each other from diff csv files
+match = df[df["ST_CASE"].isin(fatal_acc["ST_CASE"])]
+
+#merges corresponding data from csv files
+merged_data = match.merge(fatal_acc[["ST_CASE", "TWAY_ID"]], on="ST_CASE", how="inner")
+
+#for indivudual highway data piecharts
+for hw in highways:
+    subpies = merged_data[merged_data["TWAY_ID"] == hw]
+    if subpies.empty:
+        continue
+    counts = subpies["DRIMPAIRNAME"].value_counts().reset_index()
+    counts.columns = ["Drug Type", "Count"]
+
+    plt.figure(figsize=(7, 7))
+    plt.pie(
+        counts["Count"],
+        labels=counts["Drug Type"],
+        autopct="%1.1f%%",
+        startangle=90,
+    )
+    plt.title(f"Drug Impairment in Fatal Accidents on {hw}")
+    plt.show()
