@@ -12,7 +12,7 @@ ca = cf[(cf["STATENAME"] == "CALIFORNIA") | (cf["STATE"] == 6)]
 
 # selected highways in California (from groupmate findings)
 highways = ["I-5", "I-10", "I-405", "US-101", "I-110", "I-105", "I-605", "I-710"]
-# amount of fatal accidents from selected highways
+# confirms amount of fatal accidents from selected highways
 fatal_acc = ca[ca["TWAY_ID"].isin(highways) & (ca["FATALS"] > 0)]
 # finds matching case numbers from csv files
 match = df[df["ST_CASE"].isin(fatal_acc["ST_CASE"])]
