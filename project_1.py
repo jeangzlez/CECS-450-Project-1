@@ -17,7 +17,7 @@ match = df[df["ST_CASE"].isin(fatal_acc["ST_CASE"])]
 #merges corresponding data from csv files
 merged_data = match.merge(fatal_acc[["ST_CASE", "TWAY_ID"]], on="ST_CASE", how="inner")
 
-#for indivudual highway data piecharts
+#piecharts
 for hw in highways:
     subpies = merged_data[merged_data["TWAY_ID"] == hw]
     if subpies.empty:
@@ -25,12 +25,23 @@ for hw in highways:
     counts = subpies["DRIMPAIRNAME"].value_counts().reset_index()
     counts.columns = ["Drug Type", "Count"]
 
+    #customization for piecharts
     plt.figure(figsize=(7, 7))
     plt.pie(
         counts["Count"],
         labels=counts["Drug Type"],
         autopct="%1.1f%%",
         startangle=90,
+        textprops={'fontsize': 11},
+        colors=['tomato', 'cornflowerblue', 'gold', 'orchid', 'green', 'indianred', 'darkblue' ],
+        wedgeprops={'edgecolor': 'white', 'linewidth': 3}
     )
-    plt.title(f"Drug Impairment in Fatal Accidents on {hw}")
+
+    
+    plt.title(
+        #f"Drug Impairment in Fatal Accidents on {hw}"
+        f"{hw}",
+        fontdict={"fontsize": 18},
+        pad=20
+    )
     plt.show()
