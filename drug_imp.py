@@ -6,51 +6,75 @@ import matplotlib.pyplot as plt
 # read files
 df = pd.read_csv("dataset/drimpair.csv")
 cf = pd.read_csv("dataset/accident.csv")
+sf = pd.read_csv("dataset/drugs.csv")
 
 # filter accident.csv to California only
 ca = cf[(cf["STATENAME"] == "CALIFORNIA") | (cf["STATE"] == 6)]
 
 # selected highways in California (from groupmate findings)
 highways = ["I-5", "I-10", "I-405", "US-101", "I-110", "I-105", "I-605", "I-710"]
-# confirms amount of fatal accidents from selected highways
+# filters fatal accidents
 fatal_acc = ca[ca["TWAY_ID"].isin(highways) & (ca["FATALS"] > 0)]
-# finds matching case numbers from csv files
-match = df[df["ST_CASE"].isin(fatal_acc["ST_CASE"])]
 
-# merges corresponding data from csv files
-merged_data = match.merge(fatal_acc[["ST_CASE", "TWAY_ID"]], on="ST_CASE", how="inner")
+# finds matching case numbers from csv files
+merge_data = fatal_acc.merge(df, on="ST_CASE", how="left")
+merge_data = merge_data.merge(sf, on="ST_CASE", how="left")
+
 
 #<---------- PIECHART PLOT ---------->
 
 # creates a grid that fits 8 piecharts
-fig, axes = plt.subplots(2, 4, figsize=(7, 7))
+fig, axes = plt.subplots(4, 2, figsize=(7, 7))
 axes = axes.flatten()
 # tracks grid to avoid overlaps/rewriting
 index = 0
 
-# loops through selected highways
+# colors for each slice in piecharts
+colors = ['tomato', 'cornflowerblue', 'gold', 'orchid', 'green', 'indianred', 'darkblue']
+
+
 for hw in highways:
-    subpies = merged_data[merged_data["TWAY_ID"] == hw]
+    # filter by highway
+    subpies = merge_data[merge_data["TWAY_ID"] == hw]
     if subpies.empty:
         continue
 
+    # tracks type of drug impairments
     counts = subpies["DRIMPAIRNAME"].value_counts().reset_index()
     counts.columns = ["Drug Type", "Count"]
 
     # design for each piechart/slices
-    axes[index].pie(
+    wedges, texts, autotexts = axes[index].pie(
         counts["Count"],
-        labels=counts["Drug Type"],
-        autopct="%1.1f",
         startangle=90,
-        colors=['tomato', 'cornflowerblue', 'gold', 'orchid', 'green', 'indianred', 'darkblue'],
-        wedgeprops={'edgecolor': 'white', 'linewidth': 2}
+        colors=colors[:len(counts)],
+        autopct="%1.1f%%",
+        wedgeprops={'edgecolor': 'white', 'linewidth': 1}
     )
+
+    for autotext in autotexts:
+        autotext.set_fontsize(6)
+
     # title for each piechart
-    axes[index].set_title(f"{hw}")
+    axes[index].set_title(
+        f"{hw}",
+        fontsize=10
+    )
+
+    # key for piecharts (needed bc too crowded to label directly)
+    axes[index].legend(
+        wedges,
+        counts["Drug Type"],
+        title="Drug Impairment Type",
+        loc="center left",
+        bbox_to_anchor=(1, 0.5),
+        fontsize=8,
+        title_fontsize=9
+    )
+
     # increment index to avoid revisiting same grid location
     index += 1
 
 # title for entire grid
-fig.suptitle("Types of Drug Impairment reported")
+fig.suptitle("Types of Drug Impairment Reported", fontsize=16)
 plt.show()
